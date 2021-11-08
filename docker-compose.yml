@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=secret
+      - MONGO_INITDB_DATABASE=productdb
+    volumes:
+      - ./.docker/mongodb/initdb.d/:/docker-entrypoint-initdb.d/
+      - ./.docker/mongodb/data/db/:/data/db
+      - ./.docker/mongodb/data/log/:/var/log/mongodb/
+    ports:
+      - 27018:27017
+    
+  app:
+    depends_on:
+      - mongodb
+    build: .
+    ports:
+      - "8080:8080"
+    # restart: unless-stopped
+    environment:
+      - DB_CONNECTION_STRING=mongodb://root:secret@mongo:27017/productdb
+    stdin_open: true
+    tty: true
+
+volumes:
+  db:
